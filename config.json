@@ -1,8 +1,9 @@
 {
   "inbounds": [
     {
-      "port": 443,
-      "protocol": "vmess",
+      "port": 8080,
+      "listen": "0.0.0.0",
+      "protocol": "vless",
       "settings": {
         "clients": [
           {
@@ -21,9 +22,6 @@
     }
   ],
   "outbounds": [
-    {
-      "protocol": "freedom",
-      "settings": {}
-    }
+    { "protocol": "freedom", "settings": {} }
   ]
 }
