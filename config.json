@@ -1,12 +1,12 @@
 {
   "inbounds": [
     {
-      "port": 8080,
-      "protocol": "trojan",
+      "port": 443,
+      "protocol": "vmess",
       "settings": {
         "clients": [
           {
-            "id": "8325b354-e251-5780-8592-f9870c91d28d",
+            "id": "2e043660-d86f-11f0-b832-205c6d5f5d78",
             "level": 0
           }
         ],
