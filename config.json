@@ -2,16 +2,15 @@
   "inbounds": [
     {
       "port": 8080,
-      "listen": "0.0.0.0",
-      "protocol": "vmess",
+      "protocol": "vless",
       "settings": {
         "clients": [
           {
-            "id": "2e043660-d86f-11f0-b832-205c6d5f5d78",
-            "alterId": 0,
+            "id": "694bd9a7-24cc-4a74-b844-17d3400f00b3",
             "level": 0
           }
-        ]
+        ],
+        "decryption": "none"
       },
       "streamSettings": {
         "network": "ws",
@@ -22,6 +21,9 @@
     }
   ],
   "outbounds": [
-    { "protocol": "freedom", "settings": {} }
+    {
+      "protocol": "freedom",
+      "settings": {}
+    }
   ]
 }
