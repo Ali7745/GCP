@@ -1,0 +1,65 @@
+name: M
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ngrok-vps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up SSH access
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openssh-server
+          sudo systemctl start ssh
+          # إعداد كلمة المرور للمستخدم الحالي (ubuntu) بدلاً من root للأمان والتوافق
+          echo "ubuntu:${{ secrets.RUNNER_PASSWORD }}" | sudo chpasswd
+          sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+          sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+          sudo service ssh restart
+
+      - name: Install ngrok
+        run: |
+          curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
+          echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+          sudo apt-get update
+          sudo apt-get install -y ngrok
+
+      - name: Authenticate ngrok
+        run: ngrok config add-authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
+
+      - name: Start ngrok tunnel and print connection info
+        run: |
+          # تشغيل النفق وتوجيه المخرجات لملف
+          ngrok tcp 22 --log=stdout > ngrok.log &
+          sleep 10
+          echo "================================"
+          echo "بيانات الاتصال بـ Termius:"
+          # محاولة استخراج الرابط مع التحقق من وجوده
+          URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')
+          if [ "$URL" == "null" ] || [ -z "$URL" ]; then
+            echo "خطأ: تعذر الحصول على رابط ngrok. تأكد من صحة NGROK_AUTH_TOKEN"
+            cat ngrok.log
+            exit 1
+          fi
+          echo "الرابط: $URL"
+          echo "================================"
+          echo "Username: ubuntu"
+          echo "Password: (الموجودة في RUNNER_PASSWORD)"
+          echo "للإتصال عبر SSH:"
+          echo "ssh ubuntu@${URL#tcp://}" | sed 's/:/ -p /'
+          echo "================================"
+
+      - name: Keep session alive
+        run: |
+          echo "السيشن سيبقى نشطاً لمدة 6 ساعات..."
+          # استخدام loop لمنع انتهاء المهمة فجأة
+          for i in {1..360}; do
+            echo "المهمة لا تزال تعمل... دقيقة $i"
+            sleep 60
+          done
